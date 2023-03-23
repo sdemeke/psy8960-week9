@@ -4,15 +4,22 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 library(httr)
 library(jsonlite)
+library(tidyverse)
+
+download.file("https://www.reddit.com/r/rstats/.json","../data/rawredditjson.html")
+rstats_list <- fromJSON("../data/rawredditjson.html", flatten = TRUE) 
+rstats_original_tbl <- rstats_list$data$children
+rstats_tbl <- rstats_original_tbl %>% 
+   select(
+    post=data.selftext, #do we want the body text or the titles? some posts don't have inner text
+    upvotes=data.ups,
+    comments=data.num_comments
+  ) 
+rstats_tbl %>% 
+  ggplot(aes(upvotes,comments)) +
+  geom_point()
+
+cor.test(rstats_tbl$upvotes, rstats_tbl$comments)
+#0.7857551 
 
 
-# get_json <- GET(url = "https://www.reddit.com/r/rstats/.json",
-#                user_agent("UMN Researcher demek004@umn.edu"))
-
-saveRDS(get_json, "../data/APIRedditstats.RDS") #saved response from 03/22 5:16pm
-
-reddit_api_response <- readRDS("../data/APIRedditstats.RDS")
-
-rstats_list <- reddit_api_response
-
-rstats_original_tbl <- content(rstats_list)$data
