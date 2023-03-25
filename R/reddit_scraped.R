@@ -4,8 +4,6 @@ library(rvest)
 library(tidyverse)
 library(xml2)
 
-
-
 ##Data Import and Cleaning
 
 rstats_html <- read_html("https://old.reddit.com/r/rstats/")
@@ -47,17 +45,24 @@ rstats_tbl %>%
 
 ##Analysis
 
-#cor.test() runs significance test on correlation between upvotes and comments
+#cor.test() runs significance test on correlation between upvotes and comments and saves object for use in paste0()
 scraped_cortest <- cor.test(rstats_tbl$upvotes, rstats_tbl$comments)
-#0.7807844     
+
 
 ##Publication 
 #Console Output: "The correlation between upvotes and comments was r(23) = .43, p = .03. This test was statistically significant."
 
 #paste0 concantenates predefined strings and dynamic portions. str_remove with beginning 0 removes leading zeros
 #round function rounds decimals to 2 digits after decimal point
-paste0("The correlation between upvotes and comments was r", "(", scraped_cortest$parameter[[1]] ,") = ",
-       str_remove(round(scraped_cortest$estimate,2), pattern="^0+"), ", p = ",  
-       str_remove(round(scraped_cortest$p.value,2), pattern="^0+"),". This test was statistically significant.")
+#ifelse interprets p <0.05 depending on current p value
+paste0("The correlation between upvotes and comments was r(",
+       scraped_cortest$parameter[[1]] ,
+       ") = ",
+       str_remove(round(scraped_cortest$estimate,2), pattern="^0+"),
+       ", p = ",  
+       str_remove(round(scraped_cortest$p.value,2), pattern="^0+"),
+       ". This test was",
+       ifelse(scraped_cortest$p.value < .05, " statistically significant.", " not statistically significant.")
+)
        
 
